@@ -109,9 +109,10 @@ def test_arc_pruning_removes_time_infeasible_arcs() -> None:
 
 
 def test_time_dependent_matrix_is_refused_without_an_explicit_decision() -> None:
-    """A bound computed against a frozen profile is not a bound for the true.
+    """Freezing a travel profile must be an explicit, recorded choice.
 
-    problem, so the exporter must not do it silently.
+    A bound computed against a frozen profile is not a bound for the true
+    problem, so the exporter must never do it silently.
     """
     base = tiny_instance()
     stops = list(base.stops.values())

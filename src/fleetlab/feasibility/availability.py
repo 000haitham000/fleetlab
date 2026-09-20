@@ -1,13 +1,11 @@
 """Vehicle availability: the shift must contain the work.
 
-Three things are checked, and the third is one the earlier Java design could not
-check at all.
+Three things are checked, and the second is the one most easily overlooked.
 
 * The vehicle does not leave its depot before its shift opens.
-* The vehicle is **back at its end stop** before its shift closes. The Java
-  original measured only the last action's departure and never modelled the
-  return leg, so a route that finished on time at its final stop but could not
-  get the vehicle home counted as feasible.
+* The vehicle is **back at its end stop** before its shift closes. Measuring
+  only the last action's departure is not enough: a route can finish on time at
+  its final stop and still leave the vehicle unable to get home.
 * The shift does not exceed any maximum duration -- drivers' hours, battery
   range expressed as time, a depot that locks.
 """

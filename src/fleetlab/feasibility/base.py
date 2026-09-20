@@ -13,11 +13,10 @@ A constraint knows its own semantics. It can express them in two ways:
     The sequence is **unknown** -- it is what the solver is choosing -- so emit
     rows that constrain it.
 
-That second signature is why the earlier Java design could never feed a MIP. It
-was not that its methods were procedural. It was that ``Vehicle`` only ever
-answered "given this order, when do we arrive?", and a mathematical program
-never asks that question: the order is its output, not its input. The class had
-nothing to offer because it was answering a question the solver does not have.
+The second signature is the one that is easy to miss. A mathematical program
+never asks "given this order, when do we arrive?" -- the order is its *output*,
+not its input. A design that can only answer that question therefore has
+nothing to offer a solver, however well it answers it.
 
 Keeping both faces on one object is also the only way the two lanes stay
 honest. Stating a time window in a checker and again in a formulation is two

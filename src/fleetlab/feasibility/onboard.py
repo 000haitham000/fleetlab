@@ -9,9 +9,6 @@ registered.
 Keeping it optional rather than baking a ride-time limit into the core is what
 lets the same framework serve both without the core ever asking what is being
 carried.
-
-Nothing equivalent existed in the earlier Java design: onboard time was not
-represented anywhere, so it could be neither constrained nor costed.
 """
 
 from __future__ import annotations

@@ -24,9 +24,9 @@ Three further properties fall out of that, and all three are load-bearing:
 The committed prefix
 --------------------
 ``committed`` is the number of leading actions that have already been executed
-or locked by the simulator and may no longer be reordered. It replaces the
-per-action status scan of the earlier Java design: "may I insert here?" becomes
-an O(1) integer comparison rather than a walk looking for a started action.
+or locked by the simulator and may no longer be reordered. Holding it as one
+integer, rather than as a status on every action, makes "may I insert here?" an
+O(1) comparison instead of a walk looking for a started action.
 
 Convenience
 -----------
@@ -217,10 +217,9 @@ class Schedule:
         """A copy with every named request removed.
 
         Note:
-            This removes *all* of them. The Java original used
-            ``Stream.anyMatch`` for the equivalent operation, which
-            short-circuits on the first successful removal and silently leaves
-            the rest in place.
+            This removes *all* of them. An implementation built on a
+            short-circuiting "any" would stop at the first successful removal
+            and silently leave the rest on the route.
         """
         targets = frozenset(requests)
         if not targets:

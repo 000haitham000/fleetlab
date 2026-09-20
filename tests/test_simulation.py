@@ -28,9 +28,10 @@ def test_clock_cannot_run_backwards(line_study: Study) -> None:
 def test_committing_a_plan_that_rewrites_history_is_refused(
     line_study: Study, line_problem: Problem
 ) -> None:
-    """An optimiser bug must not be able to produce a simulation that could.
+    """A plan may not rewrite history.
 
-    not have happened.
+    An optimiser bug must not be able to produce a simulation that could not
+    have happened.
     """
     p1, d1 = line_problem.actions_for(RequestId("r1"))
     p2, d2 = line_problem.actions_for(RequestId("r2"))
@@ -73,10 +74,10 @@ def test_freeze_gives_the_optimiser_the_real_position(
 
 
 def test_locking_never_splits_a_pair(line_problem: Problem) -> None:
-    """A frozen prefix ending between a pickup and its dropoff would strand the.
+    """A frozen prefix must never end between a pickup and its dropoff.
 
-    loadable: the pickup is locked in while the dropoff is released for
-    re-planning onto another vehicle.
+    That would strand the loadable: the pickup is locked in while the dropoff
+    is released for re-planning onto another vehicle.
     """
     p1, d1 = line_problem.actions_for(RequestId("r1"))
     p2, d2 = line_problem.actions_for(RequestId("r2"))

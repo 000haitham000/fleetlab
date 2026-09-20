@@ -30,9 +30,9 @@ should not:
     can still be built by freezing a profile, but the bound it produces is not
     valid for the true problem, and the framework refuses to pretend otherwise.
 
-Distance is kept separate from duration. The earlier Java design conflated them,
-which makes a distance-minimising objective impossible to state once travel
-times vary with traffic.
+Distance is kept separate from duration. Conflating the two makes a
+distance-minimising objective impossible to state once travel times vary with
+traffic.
 """
 
 from __future__ import annotations

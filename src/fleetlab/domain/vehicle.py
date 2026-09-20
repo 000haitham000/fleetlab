@@ -5,10 +5,10 @@ only what is true about the vehicle regardless of what it is asked to do: where
 it starts and ends, when it is available, what it can carry, when its driver
 rests.
 
-It does not hold a schedule. In the earlier Java design the vehicle owned its
-action list, which meant the vehicle *was* the route, the constraint checker and
-the schedule evaluator all at once -- three responsibilities that change for
-different reasons and that want different mutability. Here the route lives in
+It does not hold a schedule. A vehicle that owned its own route would also be
+the constraint checker and the schedule evaluator -- three responsibilities that
+change for different reasons and want different mutability. Here the route lives
+in
 :class:`~fleetlab.domain.schedule.Schedule`, evaluation in
 :mod:`fleetlab.timing`, and feasibility in :mod:`fleetlab.feasibility`.
 """
@@ -26,10 +26,10 @@ from fleetlab.domain.units import HORIZON_INFINITY, Duration, Instant, clock
 class DriverBreak:
     """A period during which the vehicle is unavailable to serve actions.
 
-    Unlike the earlier Java design -- where breaks were stored but never entered
-    any timing calculation -- breaks here are honoured by the evaluator through
+    Breaks are honoured by the evaluator through
     :class:`~fleetlab.timing.policy.ServicePolicy`, and by the MIP lane as
-    forbidden service intervals.
+    forbidden service intervals. A break that is stored but never enters a
+    timing calculation is worse than no break at all: it reads as modelled.
 
     Attributes:
         start: When the break begins.
@@ -69,9 +69,8 @@ class Vehicle:
     Attributes:
         id: Stable identifier, unique within an instance.
         start_stop: Where the vehicle begins its shift.
-        end_stop: Where the vehicle must finish. Unlike the earlier Java design,
-            this is honoured: the return leg is part of the evaluated schedule
-            and counts toward the availability-end check.
+        end_stop: Where the vehicle must finish. The return leg is part of the
+            evaluated schedule and counts toward the availability-end check.
         capacity: Per-dimension carrying limit.
         available_from: Start of the vehicle's shift.
         available_until: End of the vehicle's shift.

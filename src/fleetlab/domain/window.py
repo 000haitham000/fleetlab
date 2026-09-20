@@ -3,14 +3,12 @@
 A window is stored as an **absolute** ``[earliest, latest]`` pair, not as a pair
 of tolerances around a requested time.
 
-This is a deliberate departure from the earlier Java design, which stored
-offsets (``getEarliestTimeWindow`` / ``getLatestTimeWindow``) and recomputed the
-absolute bounds at each use site. Because the offsets were applied against
-different base times in different places -- the requested time here, a "targeted"
-time there, the promised time somewhere else -- the same window silently meant
-different things depending on which method asked. Storing the resolved window
-once removes that entire class of bug, and it is also exactly the ``e_i`` and
-``l_i`` a mathematical program needs.
+Storing tolerances instead, and resolving them wherever they are used, invites
+a specific and hard-to-see bug: the offsets get applied against different base
+times in different places -- the requested time here, the promised time there --
+so the same window quietly means different things depending on which code
+asked. Resolving once, at construction, removes that whole class of bug. It is
+also exactly the ``e_i`` and ``l_i`` a mathematical program needs.
 
 :func:`window_around` is provided so instances that are *authored* as
 offsets-around-a-requested-time can still be written that way; the resolution

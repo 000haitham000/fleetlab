@@ -16,8 +16,8 @@ candidates can therefore be evaluated concurrently, and the result can be cached
 by the schedule's hash.
 
 **Single pass.** Arrivals, services, departures, waits, loads, distances and
-onboard times all come out of the same O(n) walk. The Java original recomputed
-from index 0 per query, so asking a route for all its times was O(n^2).
+onboard times all come out of the same O(n) walk. Recomputing from index 0 per
+query would make asking a route for all its times O(n^2).
 """
 
 from __future__ import annotations

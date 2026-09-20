@@ -1,9 +1,8 @@
 """Objectives: what a study is actually trying to minimise.
 
-The earlier Java design had constraints but no cost. That is workable when one
-algorithm is hard-coded around one notion of quality, and unworkable for a
-framework whose purpose is to *compare* algorithms -- comparison requires that
-every algorithm optimise the same, explicitly stated thing.
+A framework whose purpose is to *compare* algorithms has to state explicitly
+what "better" means. Constraints alone are not enough: without a shared and
+explicit objective, two algorithms are not being compared -- two problems are.
 
 Three properties the design needs, and why:
 

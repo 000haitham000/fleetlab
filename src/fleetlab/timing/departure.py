@@ -2,9 +2,8 @@
 
 A vehicle that leaves its depot as early as possible sits idle at its first stop,
 burns shift time and, in a dynamic study, is in the wrong place to be
-re-tasked. So the convention -- inherited from the original Java design and kept
-here -- is that the vehicle leaves *just late enough* to reach its first action
-on time.
+re-tasked. So the convention here is that the vehicle leaves *just late enough*
+to reach its first action on time.
 
 Finding that instant is a genuine fixed-point problem when travel times depend
 on departure time: the duration you need in order to subtract from the target
@@ -17,7 +16,7 @@ single step for a constant matrix and in a handful for a smooth profile. If that
 does not settle -- which happens when the target arrival sits exactly on a bucket
 boundary and the iteration oscillates across it -- it falls back to a bisection
 that returns the **latest departure that still arrives no later than the
-target**. Preferring early arrival over any lateness matches the Java original.
+target**. Any amount of earliness is preferred to any amount of lateness.
 
 Bisection assumes the matrix is FIFO: leaving later never arrives earlier. A
 bucketed matrix can break that at boundaries, which is why

@@ -1,8 +1,8 @@
 """Schedules and solutions: immutability and the structural invariants.
 
-Includes a direct regression test for the ``Stream.anyMatch`` bug in the Java
-original, where removing several requests stopped at the first successful
-removal and silently left the rest in place.
+Includes a regression test against short-circuiting removal, where removing
+several requests stops at the first success and silently leaves the rest in
+place.
 """
 
 from __future__ import annotations
@@ -44,9 +44,10 @@ def test_schedules_are_hashable_and_value_equal(line_problem: Problem) -> None:
 
 
 def test_without_requests_removes_every_named_request(line_problem: Problem) -> None:
-    """Regression: the Java original used anyMatch, which short-circuits.
+    """Regression: removal must not short-circuit.
 
-    Removing two requests removed only the first.
+    An implementation built on a short-circuiting "any" removes only the first
+    request and silently leaves the rest on the route.
     """
     p1, d1 = pair(line_problem, "r1")
     p2, d2 = pair(line_problem, "r2")

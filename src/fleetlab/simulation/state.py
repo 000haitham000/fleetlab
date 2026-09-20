@@ -14,9 +14,9 @@ search        immutable    millions of throwaway candidates, every one of
                            which must be discardable for free
 ============  ===========  ==================================================
 
-The earlier Java design did both jobs with one ``Vehicle`` object, which is why
-it felt natural in one mode and awkward in the other -- and why ``currentTime``,
-``currentStop`` and per-action statuses sat so uneasily beside ``addRequest``.
+One object doing both jobs will feel natural in one mode and awkward in the
+other: a current time and a current position sit uneasily beside methods that
+add and remove planned work.
 
 Here they are separate. :class:`ExecutionState` owns the clock and reality and
 is freely mutable. The optimiser works on immutable

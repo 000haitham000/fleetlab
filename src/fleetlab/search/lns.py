@@ -7,8 +7,7 @@ improvements get chosen more often.
 This is included as a worked reference rather than as a finished competitor: it
 is the shape a study's own metaheuristic should take, and it exercises every
 seam in the framework -- ruin operators, insertion, delta evaluation, penalised
-cost, the run recorder. Read it as the worked example in
-:doc:`CONTRIBUTING <contributing>` intends.
+cost, the run recorder.
 
 Note how short the iteration is. There is no snapshot and no undo, because
 rejecting a candidate is simply not rebinding a name -- the incumbent was never

@@ -112,8 +112,8 @@ def make_request(**kwargs: object) -> Request:
 def test_promised_time_beats_requested_time() -> None:
     """The framework has exactly one definition of a target time.
 
-    The Java original had three competing ones, so the same schedule could be
-    judged feasible by one code path and infeasible by another.
+    With more than one definition, the same schedule could be judged feasible
+    by one code path and infeasible by another.
     """
     request = make_request(requested_pickup=50.0, promised_pickup=60.0)
     assert request.target_time(ActionType.PICKUP) == pytest.approx(60.0)

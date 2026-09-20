@@ -146,9 +146,10 @@ def test_time_window_violation_is_measured_in_minutes(line_problem: Problem) -> 
 
 
 def test_max_onboard_time_is_optional_per_request(line_problem: Problem) -> None:
-    """r2 states no cap, so it can never violate one -- that is what makes the.
+    """A request that states no cap can never violate one.
 
-    framework usable for goods without a separate code path.
+    That is what makes the framework usable for goods without a separate code
+    path anywhere in it.
     """
     p2, d2 = line_problem.actions_for(RequestId("r2"))
     p1, d1 = line_problem.actions_for(RequestId("r1"))
@@ -175,9 +176,10 @@ def test_max_onboard_time_default_limit_applies_to_uncapped_requests(
 
 
 def test_availability_counts_the_return_leg(line_problem: Problem) -> None:
-    """The Java original stopped at the last action; a vehicle that cannot get.
+    """Stopping at the last action is not enough.
 
-    home in time counted as feasible.
+    A vehicle can finish its last action on time and still be unable to reach
+    its end stop before the shift closes.
     """
     space = line_problem.capacity_space
     vehicle = line_problem.vehicle(VehicleId("v1"))
@@ -259,8 +261,9 @@ def test_constraint_set_composition(line_problem: Problem) -> None:
 
 
 def test_every_standard_constraint_is_linearisable() -> None:
-    """If a rule cannot be rendered into a model, the two lanes are solving.
+    """Every standard rule must be renderable into a model.
 
-    different problems -- so the set must say so loudly.
+    A rule that is not means the two lanes are solving different problems, so
+    the constraint set has to say so loudly rather than quietly drop it.
     """
     assert standard_constraints().non_linearisable() == ()

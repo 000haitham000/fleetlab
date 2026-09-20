@@ -3,11 +3,10 @@
 An :class:`Action` is a pure value object -- a request id, which end of it is
 being served, and where. It carries **no timing and no status**.
 
-That is the central change from the earlier Java design, where an ``Action``
-owned its own actual arrival, service and departure times as well as a mutable
-status. Because those fields lived on the action, every candidate schedule that
-contained the action shared them, so no two candidates could be evaluated
-independently and nothing could be compared without first being installed.
+That matters more than it looks. If an action owned its own arrival, service
+and departure times, every candidate schedule containing that action would share
+them -- so no two candidates could be evaluated independently, and nothing could
+be compared without first being installed somewhere.
 
 Here, timing is produced by the evaluator
 (:mod:`fleetlab.timing.evaluator`) and execution history lives in the simulator

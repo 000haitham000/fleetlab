@@ -5,12 +5,15 @@ epoch will send a vehicle towards a stop, change its mind, and send it
 somewhere else -- repeatedly, while the vehicle is already driving. Locking is
 what stops that.
 
-This generalises the rule from the earlier Java design, which locked only the
-single next action and computed its horizon as the larger of a fixed window and
-a fraction of the leg leading to it. Both parts are kept -- the fixed window
-handles short legs, the fraction handles long ones -- but the policy is now an
-injected strategy returning a committed **prefix length**, so a study can lock
-more than one action, lock by distance instead of time, or not lock at all.
+The default rule freezes an action when its service falls within the larger of
+a fixed window and a fraction of the leg leading to it. Two parts, because each
+covers what the other misses: the fixed window handles short legs, where a
+fraction would be meaninglessly small, and the fraction handles long ones, where
+a fixed window would leave a vehicle re-tasked most of the way to its stop.
+
+Locking is an injected strategy returning a committed **prefix length**, so a
+study can lock more than one action, lock by distance instead of time, or not
+lock at all.
 
 The result feeds :attr:`~fleetlab.domain.schedule.Schedule.committed`, which
 turns "may I insert here?" into an integer comparison rather than a scan for a
@@ -69,8 +72,7 @@ class HorizonLocking:
         window: Minimum locking horizon.
         fraction: Share of the incoming leg that also counts as locked.
         max_actions: Cap on how many actions may be frozen at once. Locking too
-            much starves the optimiser; the default of one action matches the
-            Java original's behaviour.
+            much starves the optimiser, so the default is a single action.
     """
 
     window: Duration = 5.0

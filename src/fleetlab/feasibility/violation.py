@@ -1,7 +1,7 @@
 """Violations: infeasibility reported as data, with a size.
 
-The earlier Java design signalled infeasibility by throwing. Two things follow
-from that which this framework cannot live with.
+Checking a schedule returns data, never an exception. Two reasons, and both are
+load-bearing.
 
 **You learn only yes or no.** An exception says the schedule is infeasible; it
 never says by how much. Penalty-based metaheuristics -- guided local search, large

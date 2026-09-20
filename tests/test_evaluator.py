@@ -154,10 +154,9 @@ def test_breaks_can_be_ignored_by_policy(line_problem: Problem) -> None:
 
 
 def test_shared_stop_discount_is_off_by_default(line_problem: Problem) -> None:
-    """The Java original halved dwell at a shared stop.
+    """Sharing a stop does not discount dwell unless the study asks for it.
 
-    That is an assumption,
-    so the default here is no discount and the study opts in.
+    Halving a service time is a substantive assumption, so it is opt-in.
     """
     default = EarlyArrivalPolicy()
     halved = EarlyArrivalPolicy(shared_stop_factor=0.5)

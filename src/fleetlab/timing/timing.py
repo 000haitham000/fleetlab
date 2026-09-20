@@ -4,12 +4,12 @@ One forward pass over a route produces *everything* time-related about it at
 once: arrivals, service starts, departures, driver waiting, onboard times,
 lateness, the load profile and the return to the end depot.
 
-Contrast with the earlier Java design, where each of these was a separate method
-that walked the action list from index 0 on every call. Asking for all of a
-route's arrival times was O(n^2), and quantities that were not directly
-represented -- onboard time above all -- had to be reconstructed by subtracting
-the results of two such walks. Onboard time is a constraint in dial-a-ride work
-and an objective term in most studies, so it earns a field.
+Producing them together matters for two reasons. Computing each separately
+means walking the route once per quantity, so asking for all of a route's
+arrival times costs O(n^2). And a quantity that is not represented has to be
+reconstructed by subtracting two that are -- onboard time above all, which is a
+constraint in dial-a-ride work and an objective term in most studies. It earns
+a field.
 
 These objects are immutable and cheap to keep, which is what allows a route's
 timing to be cached and its forward slack to stay valid (see
@@ -74,9 +74,9 @@ class RouteTiming:
         depot_departure: When the vehicle leaves its start stop.
         stops: One entry per action, in schedule order.
         loads: Load carried *after* completing each action, in schedule order.
-        return_arrival: When the vehicle reaches its end stop. Unlike the Java
-            original, the return leg is modelled, so a schedule that cannot get
-            home in time is detectable.
+        return_arrival: When the vehicle reaches its end stop. The return leg
+            is modelled, so a schedule that cannot get the vehicle home in time
+            is detectable.
         travel_distance: Total distance including the return leg.
         travel_time: Total time spent moving, excluding waiting and dwell.
         request_positions: Pickup and dropoff index per request on this route.

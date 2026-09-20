@@ -6,8 +6,8 @@ not currently served by any of them.
 The unassigned pool is not an afterthought. It is what makes ruin-and-recreate
 expressible at all -- a ruin operator's whole job is to move requests from routes
 into the pool -- and it is the natural home for requests a study deliberately
-rejects because serving them costs more than their revenue. The earlier Java
-design had no fleet-level object at all, so there was nowhere for either to live.
+rejects because serving them costs more than their revenue. Without a
+fleet-level object there is nowhere for either of them to live.
 
 Like :class:`~fleetlab.domain.schedule.Schedule`, this is immutable data with a
 mutable editor for convenience. See that module for why.

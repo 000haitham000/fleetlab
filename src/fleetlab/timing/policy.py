@@ -4,9 +4,8 @@ The rule "a vehicle arriving early at a pickup waits, but a vehicle arriving
 early at a dropoff serves immediately" is a **modelling decision**, not an
 implementation detail. It changes the answer, it differs between studies, and it
 decides the shape of the corresponding mathematical program -- whether you need
-``B_i >= e_i`` or ``B_i = max(A_i, e_i)``. In the earlier Java design it was
-hard-coded into the arrival calculation and could not be varied without editing
-the evaluator.
+``B_i >= e_i`` or ``B_i = max(A_i, e_i)``. Baking it into the arrival
+calculation would mean it could not be varied without editing the evaluator.
 
 Here it is an injected strategy, so a study can state its own convention and
 have both lanes follow it.
@@ -57,7 +56,7 @@ class ServicePolicy(Protocol):
 
 @dataclass(frozen=True, slots=True)
 class EarlyArrivalPolicy:
-    """The default convention, matching the original Java semantics.
+    """The default convention.
 
     * A vehicle moves to the next stop as soon as it is done with the current
       one, so it may arrive early.
@@ -68,17 +67,17 @@ class EarlyArrivalPolicy:
     * Arriving early at a **dropoff**, it serves immediately and moves on,
       handing the slack to the next action.
     * Service that would begin inside a driver break is pushed to the end of the
-      break. The Java original stored breaks but never applied them.
+      break.
 
     Attributes:
         hold_at_dropoff: Set true for studies where a delivery cannot be made
             before its window opens -- a receiving bay that is not yet staffed,
             a recipient who is not yet home.
         shared_stop_factor: Multiplier applied to dwell when the previous action
-            was at the same stop, modelling shared setup. The Java original
-            hard-coded ``0.5``; the default here is ``1.0``, because halving a
-            service time is a substantive assumption that a study should make
-            deliberately rather than inherit.
+            was at the same stop, modelling shared setup. Defaults to ``1.0``
+            -- no discount -- because halving a service time is a substantive
+            assumption a study should make deliberately rather than inherit.
+            Set ``0.5`` to model genuinely shared setup.
         respect_breaks: Whether driver breaks push service later.
     """
 

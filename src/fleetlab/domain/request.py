@@ -8,10 +8,11 @@ case -- those are simply requests whose origin happens to be the depot stop.
 
 One rule, defined once here and used everywhere
 -----------------------------------------------
-The earlier Java design had three competing notions of "the time this action is
-aiming at": the requested time, the promised time, and a separately computed
-"targeted dropoff time". Different methods consulted different ones, so the same
-schedule could be judged feasible by one code path and infeasible by another.
+"The time this action is aiming at" can be defined more than one way: the
+requested time, the promised time, or something derived from both. If different
+code paths pick different definitions, the same schedule can be judged feasible
+by one and infeasible by another -- a bug that is easy to introduce and very
+hard to see.
 
 :meth:`Request.target_time` is the single definition: **the promised time if one
 has been given, otherwise the requested time**. Nothing else in the framework is
