@@ -1,150 +1,183 @@
 # fleetlab
 
-A framework for **simulation-based optimisation of pickup-and-delivery problems**,
-built so that different algorithms can be applied to the same problem and
-compared honestly.
+A Python framework for **simulation-based optimisation of pickup-and-delivery
+problems** — routing a fleet of vehicles that collect things in one place and
+deliver them in another.
 
-What is being moved may be people or goods. The core never asks: a `Loadable` is
-whatever occupies capacity, and capacity is a vector over named dimensions —
-seats, wheelchair bays, kilograms, cubic metres. A dial-a-ride study is the
-configuration where per-request onboard-time caps are active; a parcel study is
-the one where they are not. There is no `if moving_people` anywhere in the
-framework.
+It is built so that different algorithms can be run against the same problem and
+compared fairly. Heuristics, metaheuristics and mathematical programming all
+read the same problem definition, so the numbers they produce mean the same
+thing.
 
-## The one idea
+What gets moved may be **people or goods**, or both on the same vehicle. The
+framework does not care which.
 
-The framework has two lanes over **one** problem statement:
-
-| lane | the sequence is | the question |
-|---|---|---|
-| **search** | known | given this order, is it feasible and what does it cost? |
-| **mathematical programming** | unknown | which order? |
-
-Every constraint and every objective term states itself in **both**:
-
-```python
-class TimeWindows:
-    def check_route(self, schedule, timing, ctx):  # search lane
-        for stop in timing.stops:
-            lateness = window_of(stop).lateness(stop.service_start)
-            if lateness > 0:
-                yield Violation("time_window", magnitude=lateness, unit="minutes")
-
-    def to_model(self, model, variables, ctx):  # MIP lane
-        for node in ctx.nodes:
-            model.add(variables.service_start[node] >= earliest[node])
-            model.add(variables.service_start[node] <= latest[node])
-```
-
-So a bound and a heuristic are provably answering the same question. The test
-suite asserts it directly: solve the model, read the answer back as an ordinary
-`Solution`, and re-evaluate it with the same evaluator every heuristic uses. The
-two numbers must agree to the last digit.
+---
 
 ## Install
 
-```bash
-uv sync --all-extras --dev      # or: pip install -e ".[dev]"
+You need **Python 3.11 or newer**.
+
+The steps below are for Windows. macOS and Linux are the same commands with
+forward slashes; the one difference is noted at the end.
+
+### 1. Install `uv`
+
+`uv` is the package manager this project uses. Open **PowerShell** and run:
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Python 3.11+. The mathematical-programming lane has **no solver dependency** —
-it writes standard LP files. Install the `solvers` extra only if you want to
-solve in process.
+Or, if you use winget:
 
-## Five minutes
+```powershell
+winget install --id=astral-sh.uv -e
+```
+
+**Close and reopen your terminal afterwards** so that `uv` is on your PATH. Check
+it worked:
+
+```powershell
+uv --version
+```
+
+### 2. Set up the project
+
+From the project folder — in PyCharm, open the terminal with `Alt+F12`:
+
+```powershell
+uv sync --all-extras --dev
+```
+
+That creates a virtual environment in `.venv` and installs everything, including
+the development tools. It takes a few seconds.
+
+### 3. Check it works
+
+```powershell
+uv run pytest
+```
+
+You should see `113 passed`. If you do, you are set up correctly.
+
+Then run the worked example, which solves a small problem three different ways
+and prints the results:
+
+```powershell
+uv run python examples/run_study.py
+```
+
+### Running commands later
+
+`uv run <command>` uses the project environment without you having to activate
+anything. That is the simplest way to work:
+
+```powershell
+uv run pytest
+uv run ruff check .
+uv run mypy
+```
+
+If you would rather activate the environment in your shell:
+
+```powershell
+.venv\Scripts\Activate.ps1        # PowerShell
+.venv\Scripts\activate.bat        # Command Prompt
+```
+
+If PowerShell refuses to run the activation script, allow it for the current
+window only:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+```
+
+> **macOS and Linux:** install `uv` with
+> `curl -LsSf https://astral.sh/uv/install.sh | sh`, and activate with
+> `source .venv/bin/activate`. Everything else is identical.
+
+### Setting up PyCharm
+
+1. `File → Settings → Project → Python Interpreter`
+2. `Add Interpreter → Add Local Interpreter → Existing`
+3. Choose `.venv\Scripts\python.exe` inside the project folder
+4. Right-click the `src` folder → `Mark Directory as → Sources Root`
+
+Step 4 matters: without it, PyCharm underlines every `fleetlab` import in red
+even though the code runs fine.
+
+### Optional: a solver
+
+The mathematical-programming side writes standard `.lp` files that any solver
+can read, so **no solver is required**. If you want to solve inside Python
+instead, `uv sync --all-extras` has already installed one (CBC, via PuLP).
+
+---
+
+## A first taste
 
 ```python
 from fleetlab.study import Study
 from fleetlab.io.generate import mixed_instance
 from fleetlab.search import RegretInsertion, AdaptiveLNS
 
+# A problem with 8 passengers, 2 wheelchair users, 6 parcels and 3 vehicles.
 problem = mixed_instance(passengers=8, wheelchair_users=2, parcels=6, vehicles=3)
-study = Study(problem)  # instance + rules + objective
 
+# A Study is the problem plus the rules plus what counts as "better".
+study = Study(problem)
+
+# Build a first solution.
 built = RegretInsertion().solve(study)
 print(built.describe())
 
+# Improve it.
 improved = AdaptiveLNS(iterations=600).solve(study, built.solution)
-print(improved.breakdown.describe())  # per-term cost, not one number
+print(improved.breakdown.describe())
 ```
 
-An exact bound for the same study:
+`breakdown.describe()` prints the cost broken down by term — distance, detour
+time, vehicles used, requests left unserved — rather than a single number, so
+you can see *why* one result beat another.
 
-```python
-from fleetlab.mathprog import build_model, solution_to_assignment
-from fleetlab.mathprog.adapters import solve_with_pulp, write_lp
+---
 
-report = build_model(study)
-print(report.describe())  # size, pruning, and whether it is exact
-
-write_lp(report.model, "instance.lp")  # hand to any solver
-# ...or solve in process, warm-started from the heuristic:
-warm = solution_to_assignment(study, report.variables, improved.solution)
-solved = solve_with_pulp(report.model, time_limit=300, warm_start=warm)
-```
-
-A simulated day, where requests arrive over time:
-
-```python
-from fleetlab.simulation import Simulator, HorizonLocking
-
-result = Simulator(cadence=30.0, locking=HorizonLocking()).run(study, RegretInsertion())
-print(result.describe())
-```
-
-Note that `RegretInsertion` is unchanged between the static and dynamic cases.
-It never learns that a clock exists — see *Simulation* below.
-
-Run `python examples/run_study.py` for all three together.
-
-## Layout
+## What is in the box
 
 ```
 fleetlab/
-├── domain/        entities: Stop, Loadable, Request, Vehicle, Schedule, Solution, Problem
-├── od/            travel matrices, each declaring its time dependence
-├── timing/        the forward pass: evaluator, service policy, forward time slack
-├── feasibility/   constraints — each with a check face and a to_model face
-├── objective/     decomposable, weighted, reportable cost terms
-├── moves/         neighbourhood steps as data; insertion and ruin operators
-├── search/        the heuristic lane: Algorithm protocol, construction, adaptive LNS
-├── mathprog/      variables, structural rows, round trip, optional solver adapters
-├── simulation/    the mutable half: clock, execution state, locking, decision epochs
-├── io/            JSON instances and synthetic generation
-└── study.py       Study — the one object an algorithm author holds
+├── domain/        the vocabulary: Stop, Loadable, Request, Vehicle,
+│                  Schedule, Solution, Problem
+├── od/            travel-time and distance matrices
+├── timing/        works out when a vehicle arrives, waits, serves and leaves
+├── feasibility/   the rules, and what it means to break one
+├── objective/     what counts as a better solution
+├── moves/         ways to change a solution: insert, remove, relocate
+├── search/        heuristics and metaheuristics
+├── mathprog/      builds a mathematical model of the same problem
+├── simulation/    runs a day forward in time, re-planning as it goes
+├── io/            reading, writing and generating problem instances
+└── study.py       Study — the one object you will use most
 ```
 
-## Four design decisions worth knowing before you read the code
+---
 
-**Timing is derived, never stored.** One forward pass over a route produces
-arrivals, service starts, departures, waits, onboard times, the load profile and
-the return leg. There is no cached timing to invalidate, so a move is just a
-list edit.
+## Where to go next
 
-**A schedule is immutable.** Rejecting a candidate costs nothing — it is simply
-not rebinding a name. That is what makes evaluation cacheable, parallelisable,
-and, most importantly, what keeps a route's forward time slack valid so an
-insertion feasibility test is O(1) instead of O(n). Convenience layers
-(`Schedule.editing()`, `Solution.editing()`, `RouteBuffer`) give back the
-ergonomics of mutation where sequential construction wants it.
+| if you want to | read |
+|---|---|
+| understand how it all works, from scratch | **[docs/TUTORIAL.md](docs/TUTORIAL.md)** |
+| give an AI assistant enough context to help you | **[AGENTS.md](AGENTS.md)** |
+| see it run | `examples/run_study.py` |
 
-**Infeasibility is data, not an exception.** A check returns `Violation` objects
-carrying a magnitude in natural units — minutes late, seats over, kilograms
-over. Exceptions are reserved strictly for programmer errors. A boolean verdict
-would foreclose every penalty-based metaheuristic, which is most of the good
-ones.
+The tutorial is written for someone who has never seen this code. It takes about
+twenty minutes and ends with you adding a rule of your own.
 
-**Simulation is mutable; search is not.** `ExecutionState` owns the clock and
-the fleet's real positions and mutates freely. The optimiser only ever sees a
-frozen snapshot. Splitting these was the single most valuable change from the
-earlier Java design, where one `Vehicle` object did both jobs.
-
-`ARCHITECTURE.md` explains each of these against the Java original it replaces,
-including the bugs that motivated them. `CONTRIBUTING.md` has the rules a new
-constraint, objective term or algorithm has to follow.
+---
 
 ## Status
 
-Alpha. The spine runs end to end and is tested, but the algorithms that ship are
-a baseline and a worked reference, not competitors — a study's own algorithms are
-the point. Known seams are listed at the end of `ARCHITECTURE.md`.
+Alpha. The core runs end to end and is covered by 113 tests, but the algorithms
+that ship are a starting point to measure against, not finished competitors —
+writing better ones is the point of the framework.
