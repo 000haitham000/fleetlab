@@ -24,13 +24,13 @@ Every constraint and every objective term states itself in **both**:
 
 ```python
 class TimeWindows:
-    def check_route(self, schedule, timing, ctx):        # search lane
+    def check_route(self, schedule, timing, ctx):  # search lane
         for stop in timing.stops:
             lateness = window_of(stop).lateness(stop.service_start)
             if lateness > 0:
                 yield Violation("time_window", magnitude=lateness, unit="minutes")
 
-    def to_model(self, model, variables, ctx):           # MIP lane
+    def to_model(self, model, variables, ctx):  # MIP lane
         for node in ctx.nodes:
             model.add(variables.service_start[node] >= earliest[node])
             model.add(variables.service_start[node] <= latest[node])
@@ -59,13 +59,13 @@ from fleetlab.io.generate import mixed_instance
 from fleetlab.search import RegretInsertion, AdaptiveLNS
 
 problem = mixed_instance(passengers=8, wheelchair_users=2, parcels=6, vehicles=3)
-study = Study(problem)                      # instance + rules + objective
+study = Study(problem)  # instance + rules + objective
 
 built = RegretInsertion().solve(study)
 print(built.describe())
 
 improved = AdaptiveLNS(iterations=600).solve(study, built.solution)
-print(improved.breakdown.describe())        # per-term cost, not one number
+print(improved.breakdown.describe())  # per-term cost, not one number
 ```
 
 An exact bound for the same study:
@@ -75,9 +75,9 @@ from fleetlab.mathprog import build_model, solution_to_assignment
 from fleetlab.mathprog.adapters import solve_with_pulp, write_lp
 
 report = build_model(study)
-print(report.describe())                    # size, pruning, and whether it is exact
+print(report.describe())  # size, pruning, and whether it is exact
 
-write_lp(report.model, "instance.lp")       # hand to any solver
+write_lp(report.model, "instance.lp")  # hand to any solver
 # ...or solve in process, warm-started from the heuristic:
 warm = solution_to_assignment(study, report.variables, improved.solution)
 solved = solve_with_pulp(report.model, time_limit=300, warm_start=warm)
